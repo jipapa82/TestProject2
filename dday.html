@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D-Day Counter</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #d-day-container {
+            text-align: center;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        #d-day {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff4500;
+        }
+        #reset-button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f8f8f8;
+        }
+    </style>
+</head>
+<body>
+    <div id="d-day-container">
+        <h1>D-Day</h1>
+        <div id="d-day"></div>
+        <p>Until <span id="target-date"></span></p>
+        <button id="reset-button">Reset Date</button>
+    </div>
+
+    <script>
+        const D_DAY_KEY = 'dday-target-date';
+        const dDayElement = document.getElementById('d-day');
+        const targetDateElement = document.getElementById('target-date');
+        const resetButton = document.getElementById('reset-button');
+
+        function calculateDday(targetDateInput) {
+            const targetDate = new Date(targetDateInput);
+            if (isNaN(targetDate.getTime())) {
+                dDayElement.textContent = 'Invalid Date';
+                localStorage.removeItem(D_DAY_KEY);
+                return;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Set to midnight for accurate day difference
+
+            const timeDiff = targetDate.getTime() - today.getTime();
+            const dayDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+            targetDateElement.textContent = targetDate.toLocaleDateString();
+
+            if (dayDiff === 0) {
+                dDayElement.textContent = "D-Day!";
+            } else if (dayDiff > 0) {
+                dDayElement.textContent = `D-${dayDiff}`;
+            } else {
+                dDayElement.textContent = `D+${Math.abs(dayDiff)}`;
+            }
+        }
+        
+        function setupDday() {
+            const storedDate = localStorage.getItem(D_DAY_KEY);
+
+            if (storedDate) {
+                calculateDday(storedDate);
+            } else {
+                const targetDateInput = prompt("Please enter the target date (YYYY-MM-DD):", "2025-12-25");
+                if (targetDateInput) {
+                    localStorage.setItem(D_DAY_KEY, targetDateInput);
+                    calculateDday(targetDateInput);
+                } else {
+                    dDayElement.textContent = 'Date not set';
+                    targetDateElement.textContent = 'an unknown date';
+                }
+            }
+        }
+        
+        resetButton.addEventListener('click', () => {
+            localStorage.removeItem(D_DAY_KEY);
+            location.reload();
+        });
+
+        window.onload = setupDday;
+    </script>
+</body>
+</html>
